@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: sales-agent
+    env: python
+    buildCommand: pip install -r requirements-web.txt
+    startCommand: gunicorn web.app:app --workers 2 --bind 0.0.0.0:$PORT
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_HOME_CHANNEL
+        sync: false
