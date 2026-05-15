@@ -18,6 +18,14 @@ import requests
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Import the website detector for Option D — auto-detect websites if not recorded
+try:
+    from agents.website_detector import detect_website
+    _HAS_DETECTOR = True
+except ImportError:
+    _HAS_DETECTOR = False
+
 from data.schema import get_db, init_db, update_stat
 
 # ─── ENV LOADER ──────────────────────────────────────────────────────────────
@@ -434,6 +442,16 @@ def analyst_run(limit=10):
         state = lead.get("state", "")
         category = lead.get("category", "")
         website = lead.get("website", "")
+
+        # Option D: Auto-detect website if none recorded
+        if not website and _HAS_DETECTOR:
+            detected_url = detect_website(name, city, delay=0)
+            if detected_url:
+                website = detected_url
+                # Save it back to the DB so future runs don't re-check
+                conn.execute("UPDATE leads SET website = ? WHERE id = ?", (website, lead["id"]))
+                conn.commit()
+                print(f"  🌐 Detected: {website}")
 
         print(f"  🔍 {name} ({city}, {state})...", end=" ", flush=True)
 
