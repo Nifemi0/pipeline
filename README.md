@@ -1,106 +1,99 @@
-# Pipeline 🪠
+# Pipeline — Multi-Agent Sales Assistant 🤖
 
-> **AI Agent Olympics 2026 — Milan AI Week**  
-> Tracks: Agentic Workflows · Collaborative Systems · Enterprise Utility
+**An AI-powered sales pipeline that discovers, analyzes, and pitches to blue-collar businesses without websites.**
 
-An automated multi-agent pipeline that finds US blue-collar businesses without websites, researches them via Yelp, scores lead quality, and generates personalized sales pitches — all running autonomously on a daily cron schedule.
+Built for the AI Agent Olympics @ Milan AI Week 2026.
+
+---
 
 ## Architecture
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   SCOUT     │ ──▶ │   ANALYST   │ ──▶ │   WRITER    │ ──▶ │ ORCHESTRATOR│
-│  (Lead Gen) │     │  (Yelp API) │     │ (Pitch Gen) │     │ (Coordinator)│
-└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
-       │                   │                   │                   │
-       ▼                   ▼                   ▼                   ▼
-  Yellowpages.com      Yelp Fusion          Gemini 2.5        Daily Cron
-  24 US cities         Real ★ & reviews     Personalized        Telegram
-  7+ trade types       is_closed check      HTML pitches        Dashboard
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  SCOUT      │ →  │  ANALYST    │ →  │  WRITER     │
+│  (find      │    │  (score     │    │  (generate  │
+│   leads)    │    │   leads)    │    │   pitches)  │
+└─────────────┘    └─────────────┘    └─────────────┘
+       │                  │                  │
+       ▼                  ▼                  ▼
+    ┌──────────────────────────────────────────┐
+    │            SHARED DATABASE                │
+    │  Leads → Analysis → Pitches → Tracking   │
+    └──────────────────────────────────────────┘
 ```
 
-### Agent Breakdown
+### Agents
 
-| Agent | Role | Technology | Output |
-|-------|------|-----------|--------|
-| **Scout** | Finds leads without websites | Yellowpages scraping | Raw leads (name, phone, city) |
-| **Analyst** | Researches each lead | Yelp Fusion API (free) | Rating, reviews, active status |
-| **Writer** | Generates sales pitches | Gemini 2.5 Flash | Personalized HTML emails |
-| **Orchestrator** | Coordinates pipeline + cron | Python + Telegram | Daily reports to Telegram |
+| Agent | Role | Method |
+|-------|------|--------|
+| **Scout** | Discovers blue-collar businesses | Yellowpages scraping (cloudscraper) |
+| **Analyst** | Scores leads hot/warm/cold | Website email + Facebook signal extraction |
+| **Writer** | Generates personalized sales pitches | LLM-powered (Gemini) |
 
-## Features
+### Pipeline Flow
 
-- **🗺️ 24 US Cities** — New York, LA, Chicago, Houston, Phoenix, Philadelphia, San Antonio, San Diego, Dallas, San Jose, Austin, Jacksonville, Fort Worth, Columbus, Charlotte, Indianapolis, San Francisco, Seattle, Denver, Nashville, El Paso, Washington DC, Boston, Las Vegas
-- **🔧 7+ Trade Categories** — Plumbing, Electrical, Roofing, HVAC, Masonry/Concrete, Landscaping, Remodeling
-- **⭐ Yelp Fusion Integration** — Real ratings (1-5★), review counts, open/closed status replaces unreliable scraping
-- **📊 Live Dashboard** — SaaS-style web UI (charcoal + gold) showing pipeline stats, lead scoring, analysis history
-- **📈 1,174 Real Leads** — Proven at scale with real US business data
-- **🤖 Fully Automated** — 9 daily cron batches (50 leads each = 450/day) with monitoring
-- **💰 100% Free APIs** — Yelp Fusion (500/day, no credit card), Gemini 2.5 Flash (free tier)
+```
+Scout → Find 50 new leads (plumbers, electricians, roofers, etc.)
+  ↓
+Analyst → Score each lead: has website? email? Facebook? phone?
+  ↓
+Writer → Generate personalized pitch for hot/warm leads
+  ↓
+Dashboard → View, filter, manage your pipeline
+```
 
-## Scoring System
+---
 
-| Score | Criteria | Confidence |
-|-------|----------|-----------|
-| 🔥 **Hot** | 4+★ with 5+ reviews OR 20+ reviews | 80-85% |
-| 👍 **Warm** | Active but limited online presence | 50-65% |
-| ❄️ **Cold** | Can't verify activity or appears closed | 30-50% |
+## Dashboard
+
+Live mission-control interface at: **https://pipeline.vercel.app**
+
+- **Dashboard** — Pipeline overview with system stats
+- **Leads** — Browse/filter 1,000+ leads by city, category, score
+- **Pitches** — Generated pitch history with status tracking
+- **Controls** — Run agents on demand via command center
+- **Analytics** — Score distribution, top cities, daily activity
+
+---
+
+## Stats
+
+- **1,174** leads collected across 26 US cities
+- **397** analyzed with multi-signal scoring
+- **106** hot leads (no website, active business, reachable)
+- **103** AI-generated pitches ready to send
+
+---
+
+## Tech Stack
+
+- **Python** — Agent scripts (scout, analyst, writer)
+- **Flask** — API server + admin dashboard
+- **SQLite** — Lead database
+- **Gemini** — AI scoring + pitch generation
+- **Cloudscraper** — Yellowpages data collection
+- **Vercel** — Static snapshot hosting
+
+---
 
 ## Quick Start
 
 ```bash
-# Clone
-git clone https://github.com/Nifemi0/multi-agent-sales-assistant.git
-cd multi-agent-sales-assistant
+# Run the full pipeline
+python3 orchestrator.py
 
-# Install
-pip install -r requirements.txt
+# Run individual agents
+python3 agents/scout.py --max 50
+python3 agents/analyst.py --limit 50
+python3 agents/writer.py --limit 50
 
-# Set up APIs (copy .env.example to .env and fill in)
-# - YELP_API_KEY (free at yelp.com/developers)
-# - GEMINI_API_KEY (free at aistudio.google.com)
+# Start the dashboard
+python3 server.py
 
-# Run a single batch
-python agents/analyst.py --limit 10
-python agents/writer.py --limit 10
-
-# Run full pipeline
-python orchestrator.py --scout --analyze --write --limit 10
-
-# Launch dashboard
-cd web && python app.py
+# Generate Vercel snapshot
+python3 scripts/snapshot.py
 ```
 
-## Tech Stack
+---
 
-- **Python** — Core agents and pipeline
-- **Yelp Fusion API** — Business research (free, 500 req/day, no credit card)
-- **Gemini 2.5 Flash** — AI pitch generation (free tier)
-- **Flask** — Web dashboard
-- **SQLite** — Lead database
-- **Telegram Bot** — Daily reports
-
-## Project Structure
-
-```
-multi-agent-sales-assistant/
-├── agents/
-│   ├── scout.py          # Lead scraping (Yellowpages)
-│   ├── analyst.py        # Yelp research + scoring
-│   └── writer.py         # Pitch generation
-├── web/
-│   ├── app.py            # Flask dashboard
-│   └── templates/        # SaaS UI (charcoal + gold)
-├── data/
-│   └── schema.py         # Database schema
-├── orchestrator.py       # Pipeline coordinator
-├── batch-runner.py       # Cron batch handler
-└── requirements.txt
-```
-
-## AI Agent Olympics Submission
-
-- **Track:** Agentic Workflows, Collaborative Systems, Enterprise Utility
-- **Problem:** US blue-collar businesses (plumbers, electricians, roofers) often lack websites — manual outreach is slow
-- **Solution:** 4-agent pipeline that autonomously finds, researches, and pitches — no human needed after setup
-- **Scale:** 1,174 real leads across 24 US cities, 95 analyzed with real Yelp data
+*Built solo in 8 days for the AI Agent Olympics @ Milan AI Week 2026*
