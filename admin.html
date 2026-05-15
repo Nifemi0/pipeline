@@ -192,6 +192,40 @@ a{color:#f0f0fa;text-decoration:none}
 .flex{display:flex}
 .flex-wrap{flex-wrap:wrap}
 .items-center{align-items:center}
+
+/* ===== SYSTEM STATUS BAR ===== */
+.system-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:rgba(240,240,250,0.12);margin-bottom:24px}
+.system-bar .sys-item{background:#000;padding:12px 16px;display:flex;flex-direction:column;align-items:center}
+.system-bar .sys-value{font-size:20px;font-weight:600;letter-spacing:-0.02em;line-height:1.2}
+.system-bar .sys-label{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:rgba(240,240,250,0.5);margin-top:2px}
+.system-bar .sys-value.hot{color:#34d399}.system-bar .sys-value.warm{color:#fbbf24}.system-bar .sys-value.cold{color:#f87171}
+.sys-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:6px;vertical-align:middle;animation:pulse 2s infinite}
+.sys-dot.green{background:#34d399}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ===== HERO PIPELINE ACTION ===== */
+.hero-section{background:rgba(240,240,250,0.03);border:1px solid rgba(240,240,250,0.35);padding:32px;margin-bottom:24px;text-align:center}
+.hero-section h2{font-size:24px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px}
+.hero-section .hero-sub{font-size:12px;color:rgba(240,240,250,0.5);letter-spacing:0.05em;margin-bottom:20px}
+.hero-btn{background:rgba(240,240,250,0.1);border:2px solid rgba(240,240,250,0.6);color:#f0f0fa;padding:14px 40px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;border-radius:0;cursor:pointer;transition:all 0.2s}
+.hero-btn:hover{background:rgba(240,240,250,0.2);border-color:#f0f0fa;transform:translateY(-1px)}
+.hero-btn:active{transform:translateY(0)}.hero-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none}
+
+/* ===== PIPELINE FLOW ===== */
+.pipeline-flow{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:24px}
+.pipeline-step{flex:1;text-align:center;padding:16px 8px;border:1px solid rgba(240,240,250,0.2);background:rgba(240,240,250,0.02);min-width:0}
+.pipeline-step .step-icon{font-size:24px;margin-bottom:6px;display:block}
+.pipeline-step .step-label{font-size:9px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,240,250,0.5)}
+.pipeline-step .step-count{font-size:13px;font-weight:600;margin-top:3px;color:rgba(240,240,250,0.8)}
+.pipeline-step.done{border-color:rgba(52,211,153,0.3);background:rgba(52,211,153,0.05)}
+.pipeline-arrow{font-size:16px;color:rgba(240,240,250,0.2);padding:0 2px;flex-shrink:0}
+
+@media(max-width:768px){
+  .pipeline-flow{flex-wrap:wrap}.pipeline-arrow{display:none}
+  .pipeline-step{min-width:30%;flex:1 1 30%}
+  .hero-section{padding:24px 16px}.hero-section h2{font-size:18px}
+  .system-bar{grid-template-columns:repeat(3,1fr)}
+}
 </style>
 </head>
 <body>
@@ -226,10 +260,41 @@ a{color:#f0f0fa;text-decoration:none}
   <main class="main-content" id="mainContent">
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
-      <div class="page-header">
-        <h2>Dashboard</h2>
-        <div class="meta">Pipeline overview &amp; system status</div>
+      <!-- System Status Bar -->
+      <div class="system-bar" id="sys-bar">
+        <div class="sys-item"><span class="sys-value" id="sys-leads">—</span><span class="sys-label">Total Leads</span></div>
+        <div class="sys-item"><span class="sys-value hot" id="sys-hot">—</span><span class="sys-label">Hot</span></div>
+        <div class="sys-item"><span class="sys-value warm" id="sys-warm">—</span><span class="sys-label">Warm</span></div>
+        <div class="sys-item"><span class="sys-value cold" id="sys-cold">—</span><span class="sys-label">Cold</span></div>
+        <div class="sys-item"><span class="sys-value" id="sys-pitches">—</span><span class="sys-label">Pitches</span></div>
+        <div class="sys-item"><span class="sys-value live" id="sys-status"><span class="sys-dot green"></span>LIVE</span><span class="sys-label">System</span></div>
       </div>
+      
+      <!-- Hero: Primary Pipeline Action -->
+      <div class="hero-section">
+        <h2>Pipeline Command Center</h2>
+        <div class="hero-sub">Discover → Score → Pitch — full pipeline automation</div>
+        <button class="hero-btn" id="hero-run-pipeline">▶ Run Full Pipeline</button>
+        <div class="hero-meta">
+          <span>106 hot leads ready to pitch</span>
+          <span>397 analyzed</span>
+          <span>103 pitches generated</span>
+        </div>
+      </div>
+
+      <!-- Pipeline Flow Visualization -->
+      <div class="pipeline-flow" id="pipeline-flow">
+        <div class="pipeline-step done"><span class="step-icon">🔍</span><span class="step-label">Scout</span><span class="step-count" id="flow-scout">1,174 leads</span></div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-step"><span class="step-icon">📊</span><span class="step-label">Analyze</span><span class="step-count" id="flow-analyze">397 scored</span></div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-step"><span class="step-icon">✍️</span><span class="step-label">Write</span><span class="step-count" id="flow-write">103 pitches</span></div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-step"><span class="step-icon">📤</span><span class="step-label">Send</span><span class="step-count" id="flow-send">0 sent</span></div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-step"><span class="step-icon">✅</span><span class="step-label">Close</span><span class="step-count" id="flow-close">0 closed</span></div>
+      </div>
+
       <div id="dash-stats" class="stats-row"></div>
       <div class="section-title">Agent Status</div>
       <div class="ghost-card" id="dash-agents"><div class="loading"></div></div>
@@ -380,6 +445,20 @@ function esc(str){ const d=document.createElement('div'); d.textContent=str||'';
 async function loadDashboard(){
   try {
     const stats = await api('/stats');
+    
+    // System status bar
+    document.getElementById('sys-leads').textContent = stats.total_leads || 0;
+    document.getElementById('sys-hot').textContent = stats.hot || 0;
+    document.getElementById('sys-warm').textContent = stats.warm || 0;
+    document.getElementById('sys-cold').textContent = stats.cold || 0;
+    document.getElementById('sys-pitches').textContent = stats.pitches || 0;
+    
+    // Pipeline flow
+    document.getElementById('flow-scout').textContent = (stats.total_leads||0) + ' leads';
+    document.getElementById('flow-analyze').textContent = (stats.analyzed||0) + ' scored';
+    document.getElementById('flow-write').textContent = (stats.pitches||0) + ' pitches';
+    
+    // Stats row
     document.getElementById('dash-stats').innerHTML = `
       <div class="stat-card"><div class="stat-value">${esc(stats.total_leads)}</div><div class="stat-label">Total Leads</div></div>
       <div class="stat-card"><div class="stat-value">${esc(stats.analyzed)}</div><div class="stat-label">Analyzed</div></div>
@@ -390,7 +469,7 @@ async function loadDashboard(){
       <div class="stat-card"><div class="stat-value">${esc(stats.remaining)}</div><div class="stat-label">Remaining</div></div>
     `;
   } catch(e){
-    document.getElementById('dash-stats').innerHTML = '<div class="empty-state">Failed to load stats: '+e.message+'</div>';
+    document.getElementById('dash-stats').innerHTML = '<div class="empty-state">Failed to load stats</div>';
   }
   try {
     const agents = await api('/agents');
@@ -419,6 +498,15 @@ async function loadDashboard(){
     document.getElementById('dash-hot-leads').innerHTML = '<div class="empty-state">Failed to load leads: '+e.message+'</div>';
   }
 }
+
+// Hero: Run Pipeline button
+document.getElementById('hero-run-pipeline')?.addEventListener('click', function(){
+  location.href = '#controls';
+  setTimeout(() => {
+    const pipelineBtn = document.querySelector('[data-action="pipeline"]');
+    if(pipelineBtn) pipelineBtn.click();
+  }, 300);
+});
 
 // ===== LOAD LEADS =====
 let leadsState = {page:1,per_page:50,city:'',category:'',score:'',search:''};
