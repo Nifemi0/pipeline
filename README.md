@@ -5,6 +5,7 @@
 Built for the **AI Agent Olympics @ Milan AI Week 2026** (May 13–20).  
 Build time: **8 days, solo developer.**  
 Live demo: https://gem-stamps-watt-whale.trycloudflare.com  
+Vercel (read-only): https://sales-agent-sepia.vercel.app  
 GitHub: https://github.com/Nifemi0/pipeline
 
 ---
