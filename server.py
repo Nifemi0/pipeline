@@ -17,6 +17,7 @@ from flask import Flask, jsonify, request, render_template_string
 HERE = Path(__file__).parent
 DB_PATH = HERE / "data" / "sales_agent.db"
 TEMPLATE_PATH = HERE / "admin.html"
+LANDING_PATH = HERE / "landing.html"
 
 app = Flask(__name__)
 
@@ -258,11 +259,17 @@ def api_run_agent(agent):
 # ─── ADMIN PAGE ────────────────────────────────────────────────────────────────
 
 @app.route("/")
+def landing():
+    if LANDING_PATH.exists():
+        return render_template_string(LANDING_PATH.read_text())
+    return "landing.html not found", 500
+
+@app.route("/dashboard")
 @app.route("/<path:path>")
 def admin_page(path=None):
     if TEMPLATE_PATH.exists():
         return render_template_string(TEMPLATE_PATH.read_text())
-    return "admin.html not found — run the build step first", 500
+    return "admin.html not found", 500
 
 # ─── MAIN ──────────────────────────────────────────────────────────────────────
 
