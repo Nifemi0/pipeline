@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS lead_analyses (
     google_maps_found INTEGER DEFAULT 0,
     facebook_url TEXT,
     facebook_active INTEGER DEFAULT 0,
+    email_found INTEGER DEFAULT 0,
+    email TEXT DEFAULT '',
     review_count INTEGER DEFAULT 0,
     avg_rating REAL DEFAULT 0,
     last_review_date TEXT,

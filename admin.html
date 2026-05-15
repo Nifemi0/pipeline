@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SALES PIPELINE MISSION CONTROL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#000;color:#f0f0fa;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:300;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+a{color:#f0f0fa;text-decoration:none}
+::selection{background:rgba(240,240,250,0.2);color:#fff}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#0a0a0f}
+::-webkit-scrollbar-thumb{background:rgba(240,240,250,0.25);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(240,240,250,0.4)}
+
+/* ===== LAYOUT ===== */
+.app-layout{display:flex;height:100vh;overflow:hidden}
+
+/* ===== SIDEBAR ===== */
+.sidebar{width:240px;min-width:240px;background:#000;border-right:1px solid rgba(240,240,250,0.35);display:flex;flex-direction:column;padding:0;overflow-y:auto;z-index:10}
+.sidebar-brand{padding:28px 24px 20px;border-bottom:1px solid rgba(240,240,250,0.15)}
+.sidebar-brand h1{font-size:16px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#f0f0fa;line-height:1.2}
+.sidebar-brand .sub{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,240,250,0.45);margin-top:4px}
+.sidebar-nav{padding:12px 0;flex:1}
+.nav-item{display:flex;align-items:center;padding:12px 24px;font-size:13px;font-weight:400;letter-spacing:0.08em;text-transform:uppercase;color:rgba(240,240,250,0.6);cursor:pointer;transition:all 0.15s;border-left:2px solid transparent}
+.nav-item:hover{color:#f0f0fa;background:rgba(240,240,250,0.04)}
+.nav-item.active{color:#f0f0fa;border-left-color:#f0f0fa;background:rgba(240,240,250,0.06)}
+.nav-item .nav-icon{margin-right:12px;font-size:16px;width:20px;text-align:center;opacity:0.7}
+.nav-item.active .nav-icon{opacity:1}
+.sidebar-status{padding:16px 24px;border-top:1px solid rgba(240,240,250,0.1);font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:rgba(240,240,250,0.3)}
+
+/* ===== MAIN CONTENT ===== */
+.main-content{flex:1;overflow-y:auto;padding:32px 40px;min-width:0}
+.page{display:none;animation:fadeIn 0.2s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== HEADERS ===== */
+.page-header{margin-bottom:28px}
+.page-header h2{font-size:20px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#f0f0fa;margin-bottom:4px}
+.page-header .meta{font-size:12px;color:rgba(240,240,250,0.45);letter-spacing:0.05em}
+.section-title{font-size:12px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,240,250,0.5);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(240,240,250,0.12)}
+
+/* ===== CARDS ===== */
+.ghost-card{background:rgba(240,240,250,0.03);border:1px solid rgba(240,240,250,0.35);border-radius:0;padding:24px;margin-bottom:20px}
+.ghost-card-header{font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,240,250,0.45);margin-bottom:12px}
+
+/* ===== STATS ROW ===== */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:rgba(240,240,250,0.03);border:1px solid rgba(240,240,250,0.35);border-radius:0;padding:20px 16px;text-align:center}
+.stat-card .stat-value{font-size:36px;font-weight:600;color:#f0f0fa;line-height:1;letter-spacing:-0.02em}
+.stat-card .stat-label{font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,240,250,0.45);margin-top:8px}
+.stat-card.hot .stat-value{color:#34d399}
+.stat-card.warm .stat-value{color:#fbbf24}
+.stat-card.cold .stat-value{color:#f87171}
+
+/* ===== TABLES ===== */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{padding:10px 12px;font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,240,250,0.5);text-align:left;border-bottom:1px solid rgba(240,240,250,0.2)}
+.data-table td{padding:10px 12px;font-size:13px;color:rgba(240,240,250,0.85);border-bottom:1px solid rgba(240,240,250,0.08);vertical-align:middle}
+.data-table tr:hover td{background:rgba(240,240,250,0.04)}
+.data-table tr.clickable{cursor:pointer}
+.data-table .td-mono{font-family:'JetBrains Mono',monospace;font-size:12px}
+
+/* ===== BADGES ===== */
+.badge{display:inline-block;font-size:10px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;padding:3px 10px;border:1px solid;border-radius:0;background:transparent}
+.badge-hot{color:#34d399;border-color:#34d399}
+.badge-warm{color:#fbbf24;border-color:#fbbf24}
+.badge-cold{color:#f87171;border-color:#f87171}
+.badge-done{color:#34d399;border-color:#34d399}
+.badge-pending{color:#fbbf24;border-color:#fbbf24}
+.badge-failed{color:#f87171;border-color:#f87171}
+.badge-sent{color:#60a5fa;border-color:#60a5fa}
+.badge-running{color:#60a5fa;border-color:#60a5fa}
+
+/* ===== BUTTONS ===== */
+.ghost-btn{background:rgba(240,240,250,0.1);border:1px solid rgba(240,240,250,0.35);color:#f0f0fa;padding:10px 24px;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;border-radius:32px;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:8px}
+.ghost-btn:hover{background:rgba(240,240,250,0.18);border-color:rgba(240,240,250,0.55)}
+.ghost-btn:active{transform:scale(0.97)}
+.ghost-btn:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+.ghost-btn.danger{border-color:#f87171;color:#f87171}
+.ghost-btn.danger:hover{background:rgba(248,113,113,0.15)}
+.ghost-btn.primary{border-color:#60a5fa;color:#60a5fa}
+.ghost-btn.primary:hover{background:rgba(96,165,250,0.15)}
+.ghost-btn.success{border-color:#34d399;color:#34d399}
+.ghost-btn.success:hover{background:rgba(52,211,153,0.15)}
+.btn-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.btn-row .ghost-btn{flex:1;min-width:160px;justify-content:center}
+
+/* ===== FILTER BAR ===== */
+.filter-bar{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;align-items:center}
+.filter-bar select,.filter-bar input{background:rgba(240,240,250,0.06);border:1px solid rgba(240,240,250,0.35);color:#f0f0fa;padding:9px 14px;font-family:'Inter',sans-serif;font-size:12px;border-radius:0;outline:none;transition:border-color 0.15s;min-width:120px}
+.filter-bar select option{background:#000;color:#f0f0fa}
+.filter-bar select:focus,.filter-bar input:focus{border-color:#f0f0fa}
+.filter-bar input::placeholder{color:rgba(240,240,250,0.3)}
+
+/* ===== PAGINATION ===== */
+.pagination{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(240,240,250,0.1)}
+.pagination .page-btn{background:rgba(240,240,250,0.06);border:1px solid rgba(240,240,250,0.25);color:rgba(240,240,250,0.7);padding:6px 14px;font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;border-radius:0;transition:all 0.15s}
+.pagination .page-btn:hover{background:rgba(240,240,250,0.15);color:#f0f0fa}
+.pagination .page-btn.active{background:rgba(240,240,250,0.15);border-color:#f0f0fa;color:#f0f0fa}
+.pagination .page-btn:disabled{opacity:0.3;cursor:not-allowed}
+.pagination .page-info{font-size:11px;color:rgba(240,240,250,0.45);margin:0 8px;letter-spacing:0.05em}
+
+/* ===== LEAD DETAIL ===== */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.detail-grid .ghost-card{margin-bottom:0}
+.detail-field{margin-bottom:14px}
+.detail-field:last-child{margin-bottom:0}
+.detail-field .field-label{font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,240,250,0.4);margin-bottom:3px}
+.detail-field .field-value{font-size:14px;color:#f0f0fa}
+.detail-field .field-value.mono{font-family:'JetBrains Mono',monospace;font-size:13px}
+
+/* ===== ANALYSIS CARD ===== */
+.analysis-score{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border:1px solid rgba(240,240,250,0.35);margin-bottom:12px;font-size:13px}
+.analysis-score .score-num{font-size:28px;font-weight:600}
+.analysis-score .score-label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,240,250,0.45)}
+.analysis-text{font-size:13px;color:rgba(240,240,250,0.8);line-height:1.7;white-space:pre-wrap}
+
+/* ===== CONTROLS LOG ===== */
+.log-box{background:rgba(240,240,250,0.03);border:1px solid rgba(240,240,250,0.35);padding:16px;margin-top:12px;max-height:320px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;color:rgba(240,240,250,0.7);white-space:pre-wrap;word-break:break-all}
+.log-box .log-entry{padding:2px 0}
+.log-box .log-entry.error{color:#f87171}
+.log-box .log-entry.success{color:#34d399}
+.log-box .log-entry.info{color:rgba(240,240,250,0.6)}
+
+/* ===== ANALYTICS CHARTS ===== */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.chart-full{grid-column:1/-1}
+.chart-card{background:rgba(240,240,250,0.03);border:1px solid rgba(240,240,250,0.35);border-radius:0;padding:24px}
+.chart-title{font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,240,250,0.45);margin-bottom:16px}
+.bar-chart{display:flex;flex-direction:column;gap:6px}
+.bar-row{display:flex;align-items:center;gap:10px}
+.bar-label{font-size:11px;color:rgba(240,240,250,0.6);width:120px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;height:18px;background:rgba(240,240,250,0.06);position:relative}
+.bar-fill{height:100%;background:rgba(240,240,250,0.35);transition:width 0.6s ease;min-width:2px}
+.bar-fill.hot{background:#34d399}
+.bar-fill.warm{background:#fbbf24}
+.bar-fill.cold{background:#f87171}
+.bar-value{font-size:10px;color:rgba(240,240,250,0.5);width:40px;flex-shrink:0;font-family:'JetBrains Mono',monospace}
+
+/* ===== LOADING ===== */
+.loading{text-align:center;padding:40px 20px;color:rgba(240,240,250,0.35)}
+.loading::after{content:'';display:inline-block;width:20px;height:20px;border:1px solid rgba(240,240,250,0.2);border-top-color:#f0f0fa;border-radius:50%;animation:spin 0.8s linear infinite;margin-top:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== EMPTY STATE ===== */
+.empty-state{text-align:center;padding:40px 20px;color:rgba(240,240,250,0.3);font-size:12px;letter-spacing:0.05em}
+
+/* ===== AGENT STATUS TABLE ===== */
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:8px;vertical-align:middle}
+.status-dot.online{background:#34d399}
+.status-dot.offline{background:#f87171}
+.status-dot.idle{background:#fbbf24}
+
+/* ===== MOBILE ===== */
+@media(max-width:768px){
+  .sidebar{width:56px;min-width:56px}
+  .sidebar-brand{padding:16px 12px}
+  .sidebar-brand h1{font-size:0;letter-spacing:normal}
+  .sidebar-brand h1::after{content:'⚡';font-size:20px}
+  .sidebar-brand .sub{display:none}
+  .nav-item{padding:14px 12px;justify-content:center}
+  .nav-item .nav-icon{margin-right:0;font-size:18px}
+  .nav-item span:not(.nav-icon){display:none}
+  .sidebar-status{display:none}
+  .main-content{padding:20px 16px}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .detail-grid{grid-template-columns:1fr}
+  .chart-grid{grid-template-columns:1fr}
+  .filter-bar{flex-direction:column}
+  .filter-bar select,.filter-bar input{width:100%;min-width:unset}
+  .btn-row .ghost-btn{min-width:unset}
+  .data-table{font-size:12px}
+  .data-table th,.data-table td{padding:8px 8px}
+}
+
+/* ===== MISC ===== */
+.text-mono{font-family:'JetBrains Mono',monospace}
+.text-right{text-align:right}
+.text-center{text-align:center}
+.mt-12{margin-top:12px}
+.mb-12{margin-bottom:12px}
+.mt-20{margin-top:20px}
+.mb-20{margin-bottom:20px}
+.gap-8{gap:8px}
+.flex{display:flex}
+.flex-wrap{flex-wrap:wrap}
+.items-center{align-items:center}
+</style>
+</head>
+<body>
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <h1>⚡ MISSION CONTROL</h1>
+      <div class="sub">Sales Pipeline Command</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-route="#dashboard" href="#dashboard">
+        <span class="nav-icon">◈</span><span>Dashboard</span>
+      </a>
+      <a class="nav-item" data-route="#leads" href="#leads">
+        <span class="nav-icon">◉</span><span>Leads</span>
+      </a>
+      <a class="nav-item" data-route="#pitches" href="#pitches">
+        <span class="nav-icon">◎</span><span>Pitches</span>
+      </a>
+      <a class="nav-item" data-route="#controls" href="#controls">
+        <span class="nav-icon">◍</span><span>Controls</span>
+      </a>
+      <a class="nav-item" data-route="#analytics" href="#analytics">
+        <span class="nav-icon">◈</span><span>Analytics</span>
+      </a>
+    </nav>
+    <div class="sidebar-status">System Online · v1.0</div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content" id="mainContent">
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h2>Dashboard</h2>
+        <div class="meta">Pipeline overview &amp; system status</div>
+      </div>
+      <div id="dash-stats" class="stats-row"></div>
+      <div class="section-title">Agent Status</div>
+      <div class="ghost-card" id="dash-agents"><div class="loading"></div></div>
+      <div class="section-title mt-20">Top Hot Leads</div>
+      <div class="ghost-card" id="dash-hot-leads"><div class="loading"></div></div>
+    </div>
+
+    <!-- LEADS -->
+    <div class="page" id="page-leads">
+      <div class="page-header">
+        <h2>Leads</h2>
+        <div class="meta">Browse and filter pipeline leads</div>
+      </div>
+      <div class="ghost-card">
+        <div class="filter-bar" id="leads-filter-bar">
+          <select id="filter-city"><option value="">All Cities</option></select>
+          <select id="filter-category"><option value="">All Categories</option></select>
+          <select id="filter-score"><option value="">All Scores</option><option value="hot">Hot</option><option value="warm">Warm</option><option value="cold">Cold</option></select>
+          <input type="text" id="filter-search" placeholder="Search business name...">
+          <button class="ghost-btn" id="filter-apply">Apply</button>
+        </div>
+      </div>
+      <div class="ghost-card" id="leads-table-container"><div class="loading"></div></div>
+      <div class="pagination" id="leads-pagination"></div>
+    </div>
+
+    <!-- LEAD DETAIL -->
+    <div class="page" id="page-lead">
+      <div class="page-header">
+        <h2 id="lead-detail-title">Lead Detail</h2>
+        <div class="meta"><a href="#leads" style="color:rgba(240,240,250,0.5)">← Back to Leads</a></div>
+      </div>
+      <div id="lead-detail-content"><div class="loading"></div></div>
+    </div>
+
+    <!-- PITCHES -->
+    <div class="page" id="page-pitches">
+      <div class="page-header">
+        <h2>Pitches</h2>
+        <div class="meta">Generated pitch history</div>
+      </div>
+      <div class="ghost-card">
+        <div class="filter-bar">
+          <select id="pitches-status-filter">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="sent">Sent</option>
+            <option value="done">Done</option>
+            <option value="failed">Failed</option>
+          </select>
+        </div>
+      </div>
+      <div class="ghost-card" id="pitches-table-container"><div class="loading"></div></div>
+      <div class="pagination" id="pitches-pagination"></div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="page" id="page-controls">
+      <div class="page-header">
+        <h2>Controls</h2>
+        <div class="meta">Admin command center</div>
+      </div>
+      <div class="ghost-card">
+        <div class="section-title">Agent Commands</div>
+        <div class="btn-row">
+          <button class="ghost-btn" data-action="analyst" data-limit="10">▶ Run Analyst</button>
+          <button class="ghost-btn" data-action="writer" data-limit="10">▶ Run Writer</button>
+          <button class="ghost-btn primary" data-action="pipeline">▶ Run Pipeline</button>
+          <button class="ghost-btn success" data-action="refresh-data">⟳ Refresh Snapshot</button>
+        </div>
+      </div>
+      <div class="ghost-card">
+        <div class="section-title">Output Log</div>
+        <div class="log-box" id="control-log">Awaiting command input...</div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="page" id="page-analytics">
+      <div class="page-header">
+        <h2>Analytics</h2>
+        <div class="meta">Pipeline metrics &amp; trends</div>
+      </div>
+      <div id="analytics-content"><div class="loading"></div></div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ===== API BASE =====
+const API = '/api';
+
+// ===== SPA ROUTER =====
+function routeHash(){
+  let hash = location.hash || '#dashboard';
+  // Handle /lead/ID pattern
+  let pageId, param;
+  if(hash.startsWith('#lead/')){
+    pageId = 'lead';
+    param = hash.split('/')[1];
+  } else {
+    pageId = hash.replace(/^#/,'');
+  }
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const targetPage = document.getElementById('page-'+pageId);
+  if(targetPage) targetPage.classList.add('active');
+  const navItem = document.querySelector(`.nav-item[data-route="#${pageId}"]`);
+  if(navItem) navItem.classList.add('active');
+  // Load content
+  if(pageId === 'dashboard') loadDashboard();
+  else if(pageId === 'leads') loadLeads();
+  else if(pageId === 'lead') loadLeadDetail(param);
+  else if(pageId === 'pitches') loadPitches();
+  else if(pageId === 'controls') initControls();
+  else if(pageId === 'analytics') loadAnalytics();
+}
+window.addEventListener('hashchange', routeHash);
+window.addEventListener('load', routeHash);
+
+// ===== FETCH HELPER =====
+async function api(path, opts={}){
+  const res = await fetch(API+path, {headers:{'Accept':'application/json'},...opts});
+  if(!res.ok) throw new Error('API error: '+res.status);
+  return res.json();
+}
+
+// ===== UTILITY =====
+function scoreBadge(score){
+  if(score === null || score === undefined) return '<span class="badge badge-cold">N/A</span>';
+  const s = String(score).toLowerCase();
+  if(s === 'hot') return '<span class="badge badge-hot">Hot</span>';
+  if(s === 'warm') return '<span class="badge badge-warm">Warm</span>';
+  return '<span class="badge badge-cold">Cold</span>';
+}
+function statusBadge(status){
+  if(!status) return '';
+  const s = status.toLowerCase();
+  if(s === 'hot' || s === 'done' || s === 'sent') return `<span class="badge badge-${s}">${status}</span>`;
+  if(s === 'warm' || s === 'pending') return `<span class="badge badge-${s}">${status}</span>`;
+  if(s === 'cold' || s === 'failed') return `<span class="badge badge-${s}">${status}</span>`;
+  return `<span class="badge badge-pending">${status}</span>`;
+}
+function truncate(str, len=40){ return str && str.length>len ? str.slice(0,len)+'…' : str||''; }
+function esc(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+
+// ===== LOAD DASHBOARD =====
+async function loadDashboard(){
+  try {
+    const stats = await api('/stats');
+    document.getElementById('dash-stats').innerHTML = `
+      <div class="stat-card"><div class="stat-value">${esc(stats.total_leads)}</div><div class="stat-label">Total Leads</div></div>
+      <div class="stat-card"><div class="stat-value">${esc(stats.analyzed)}</div><div class="stat-label">Analyzed</div></div>
+      <div class="stat-card hot"><div class="stat-value">${esc(stats.hot)}</div><div class="stat-label">Hot</div></div>
+      <div class="stat-card warm"><div class="stat-value">${esc(stats.warm)}</div><div class="stat-label">Warm</div></div>
+      <div class="stat-card cold"><div class="stat-value">${esc(stats.cold)}</div><div class="stat-label">Cold</div></div>
+      <div class="stat-card"><div class="stat-value">${esc(stats.pitches)}</div><div class="stat-label">Pitches</div></div>
+      <div class="stat-card"><div class="stat-value">${esc(stats.remaining)}</div><div class="stat-label">Remaining</div></div>
+    `;
+  } catch(e){
+    document.getElementById('dash-stats').innerHTML = '<div class="empty-state">Failed to load stats: '+e.message+'</div>';
+  }
+  try {
+    const agents = await api('/agents');
+    let html = '<table class="data-table"><thead><tr><th>Agent</th><th>Status</th><th>Last Run</th><th>Today</th><th>Total</th></tr></thead><tbody>';
+    (agents.agents||[]).forEach(a => {
+      const dot = a.status==='online'?'online':a.status==='idle'?'idle':'offline';
+      html += `<tr><td class="td-mono">${esc(a.name)}</td><td><span class="status-dot ${dot}"></span>${esc(a.status)}</td><td>${esc(a.last_run||'—')}</td><td>${esc(a.today||0)}</td><td>${esc(a.total||0)}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('dash-agents').innerHTML = html;
+  } catch(e){
+    document.getElementById('dash-agents').innerHTML = '<div class="empty-state">Failed to load agents: '+e.message+'</div>';
+  }
+  try {
+    // Get top hot leads: fetch page 1 with hot filter, sorted by score desc
+    const leadsData = await api('/leads?page=1&per_page=10&score=hot');
+    const leads = leadsData.leads||[];
+    let html = '<table class="data-table"><thead><tr><th>Business</th><th>City</th><th>Score</th><th>Status</th></tr></thead><tbody>';
+    leads.forEach(l => {
+      html += `<tr class="clickable" onclick="location='#lead/${l.id}'"><td>${esc(l.business_name)}</td><td>${esc(l.city||'—')}</td><td class="td-mono">${l.avg_rating?Number(l.avg_rating).toFixed(1)+'★':'—'}</td><td>${scoreBadge(l.lead_score)}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    if(!leads.length) html = '<div class="empty-state">No hot leads found</div>';
+    document.getElementById('dash-hot-leads').innerHTML = html;
+  } catch(e){
+    document.getElementById('dash-hot-leads').innerHTML = '<div class="empty-state">Failed to load leads: '+e.message+'</div>';
+  }
+}
+
+// ===== LOAD LEADS =====
+let leadsState = {page:1,per_page:50,city:'',category:'',score:'',search:''};
+async function loadLeads(){
+  // Load filter dropdowns if not loaded
+  try {
+    const filters = await api('/filters');
+    const citySel = document.getElementById('filter-city');
+    if(citySel.options.length<=1){
+      (filters.cities||[]).forEach(c => { const o=document.createElement('option');o.value=c;o.textContent=c;citySel.appendChild(o); });
+      const catSel = document.getElementById('filter-category');
+      (filters.categories||[]).forEach(c => { const o=document.createElement('option');o.value=c;o.textContent=c;catSel.appendChild(o); });
+    }
+  } catch(e){}
+  await loadLeadsTable();
+}
+
+async function loadLeadsTable(){
+  document.getElementById('leads-table-container').innerHTML = '<div class="loading"></div>';
+  try {
+    const q = new URLSearchParams({page:leadsState.page,per_page:leadsState.per_page});
+    if(leadsState.city) q.set('city',leadsState.city);
+    if(leadsState.category) q.set('category',leadsState.category);
+    if(leadsState.score) q.set('score',leadsState.score);
+    if(leadsState.search) q.set('search',leadsState.search);
+    const data = await api('/leads?'+q.toString());
+    const leads = data.leads||[];
+    let html = '<table class="data-table"><thead><tr><th>ID</th><th>Business</th><th>City</th><th>Category</th><th>Score</th><th>Status</th></tr></thead><tbody>';
+    leads.forEach(l => {
+      html += `<tr class="clickable" onclick="location='#lead/${l.id}'"><td class="td-mono">${esc(l.id)}</td><td>${esc(l.business_name)}</td><td>${esc(l.city||'—')}</td><td>${esc(l.category||'—')}</td><td class="td-mono">${l.avg_rating?Number(l.avg_rating).toFixed(1)+'★':'—'}</td><td>${scoreBadge(l.lead_score)}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    if(!leads.length) html = '<div class="empty-state">No leads found matching filters</div>';
+    document.getElementById('leads-table-container').innerHTML = html;
+    // Pagination
+    const total = data.total||0;
+    const pages = data.pages||1;
+    const page = data.page||1;
+    let pgHtml = `<button class="page-btn" onclick="leadsState.page=Math.max(1,${page-1});loadLeadsTable()" ${page<=1?'disabled':''}>◀ Prev</button>`;
+    pgHtml += `<span class="page-info">Page ${page} of ${pages} (${total} total)</span>`;
+    pgHtml += `<button class="page-btn" onclick="leadsState.page=Math.min(${pages},${page+1});loadLeadsTable()" ${page>=pages?'disabled':''}>Next ▶</button>`;
+    document.getElementById('leads-pagination').innerHTML = pgHtml;
+  } catch(e){
+    document.getElementById('leads-table-container').innerHTML = '<div class="empty-state">Failed to load leads: '+e.message+'</div>';
+  }
+}
+
+// Leads filter — auto-trigger on change + Enter
+document.getElementById('filter-city')?.addEventListener('change', applyLeadsFilter);
+document.getElementById('filter-category')?.addEventListener('change', applyLeadsFilter);
+document.getElementById('filter-score')?.addEventListener('change', applyLeadsFilter);
+document.getElementById('filter-search')?.addEventListener('keydown', function(e){
+  if(e.key === 'Enter') applyLeadsFilter();
+});
+document.getElementById('filter-apply')?.addEventListener('click', applyLeadsFilter);
+
+function applyLeadsFilter(){
+  leadsState.city = document.getElementById('filter-city')?.value || '';
+  leadsState.category = document.getElementById('filter-category')?.value || '';
+  leadsState.score = document.getElementById('filter-score')?.value || '';
+  leadsState.search = document.getElementById('filter-search')?.value || '';
+  leadsState.page = 1;
+  loadLeadsTable();
+}
+
+// ===== LOAD LEAD DETAIL =====
+async function loadLeadDetail(id){
+  document.getElementById('lead-detail-title').textContent = 'Lead #'+esc(id);
+  document.getElementById('lead-detail-content').innerHTML = '<div class="loading"></div>';
+  try {
+    const data = await api('/leads/'+id);
+    const lead = data.lead||{};
+    const analysis = data.analysis;
+    const pitches = data.pitches||[];
+    let html = '<div class="detail-grid">';
+
+    // Business Info
+    html += '<div class="ghost-card"><div class="ghost-card-header">Business Info</div>';
+    html += field('Business Name', lead.business_name);
+    html += field('City', lead.city);
+    html += field('State', lead.state);
+    html += field('Category', lead.category);
+    html += field('Phone', lead.phone);
+    html += field('Email', analysis?.email || '—');
+    html += field('Address', lead.address);
+    html += field('Website', lead.website ? `<a href="${esc(lead.website)}" target="_blank" style="color:#60a5fa">${esc(lead.website)}</a>` : '—');
+    html += field('Lead Score', `${esc(lead.lead_score)} ${scoreBadge(lead.lead_score)}`);
+    html += field('Status', lead.status || 'new');
+    html += '</div>';
+
+    // Signals Analysis
+    html += '<div class="ghost-card"><div class="ghost-card-header">Signals Analysis</div>';
+    if(analysis){
+      const rating = analysis.avg_rating ? Number(analysis.avg_rating).toFixed(1) : '—';
+      html += field('Score Classification', analysis.lead_score || '—');
+      html += field('Active Status', analysis.is_active ? '<span style="color:#34d399">Active</span>' : '<span style="color:#f87171">Closed</span>');
+      html += field('Email Found', analysis.email_found ? '<span style="color:#34d399">Yes</span>' : '<span style="color:var(--text-dim)">No</span>');
+      html += field('Email', analysis.email || '—');
+      html += field('Review Count', analysis.review_count || '0');
+      html += field('Average Rating', rating !== '—' ? rating + ' / 5' : '—');
+      html += field('Facebook Page', analysis.facebook_url ? `<a href="${esc(analysis.facebook_url)}" target="_blank" style="color:#60a5fa">${esc(analysis.facebook_url)}</a>` : 'Not found');
+      html += field('Notes', analysis.notes || '—');
+      html += field('Analyzed At', analysis.analyzed_at || '—');
+    } else {
+      html += '<div class="empty-state">No analysis available for this lead</div>';
+    }
+    html += '</div>';
+
+    // Pitch History (full width)
+    html += '<div class="ghost-card" style="grid-column:1/-1"><div class="ghost-card-header">Pitch History</div>';
+    if(pitches.length){
+      html += '<table class="data-table"><thead><tr><th>Date</th><th>Pitch Text</th><th>Status</th></tr></thead><tbody>';
+      pitches.forEach(p => {
+        html += `<tr><td class="td-mono" style="white-space:nowrap">${esc(p.created_at||'')}</td><td>${esc(truncate(p.pitch_text,80))}</td><td>${statusBadge(p.status)}</td></tr>`;
+      });
+      html += '</tbody></table>';
+    } else {
+      html += '<div class="empty-state">No pitches generated for this lead</div>';
+    }
+    html += '</div>';
+
+    html += '</div>'; // close grid
+    document.getElementById('lead-detail-content').innerHTML = html;
+  } catch(e){
+    document.getElementById('lead-detail-content').innerHTML = '<div class="empty-state">Failed to load lead: '+e.message+'</div>';
+  }
+}
+
+function field(label, value){
+  return `<div class="detail-field"><div class="field-label">${label}</div><div class="field-value">${value||'—'}</div></div>`;
+}
+
+// ===== LOAD PITCHES =====
+let pitchesState = {page:1,per_page:50,status:''};
+async function loadPitches(){
+  await loadPitchesTable();
+}
+
+async function loadPitchesTable(){
+  document.getElementById('pitches-table-container').innerHTML = '<div class="loading"></div>';
+  try {
+    const q = new URLSearchParams({page:pitchesState.page,per_page:pitchesState.per_page});
+    if(pitchesState.status) q.set('status',pitchesState.status);
+    const data = await api('/pitches?'+q.toString());
+    const pitches = data.pitches||[];
+    let html = '<table class="data-table"><thead><tr><th>Date</th><th>Business</th><th>City</th><th>State</th><th>Status</th><th>Pitch Snippet</th></tr></thead><tbody>';
+    pitches.forEach(p => {
+      html += `<tr><td class="td-mono" style="white-space:nowrap">${esc(p.created_at||'')}</td><td>${esc(p.business_name||'')}</td><td>${esc(p.city||'—')}</td><td>${esc(p.state||'—')}</td><td>${statusBadge(p.status)}</td><td>${esc(truncate(p.pitch_text,50))}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    if(!pitches.length) html = '<div class="empty-state">No pitches found</div>';
+    document.getElementById('pitches-table-container').innerHTML = html;
+    const total = data.total||0;
+    const pages = data.pages||1;
+    const page = data.page||1;
+    let pgHtml = `<button class="page-btn" onclick="pitchesState.page=Math.max(1,${page-1});loadPitchesTable()" ${page<=1?'disabled':''}>◀ Prev</button>`;
+    pgHtml += `<span class="page-info">Page ${page} of ${pages} (${total} total)</span>`;
+    pgHtml += `<button class="page-btn" onclick="pitchesState.page=Math.min(${pages},${page+1});loadPitchesTable()" ${page>=pages?'disabled':''}>Next ▶</button>`;
+    document.getElementById('pitches-pagination').innerHTML = pgHtml;
+  } catch(e){
+    document.getElementById('pitches-table-container').innerHTML = '<div class="empty-state">Failed to load pitches: '+e.message+'</div>';
+  }
+}
+
+// Pitches filter
+document.getElementById('pitches-status-filter')?.addEventListener('change', function(){
+  pitchesState.status = this.value;
+  pitchesState.page = 1;
+  loadPitchesTable();
+});
+
+// ===== CONTROLS =====
+function initControls(){
+  const logBox = document.getElementById('control-log');
+  const btns = document.querySelectorAll('[data-action]');
+  btns.forEach(btn => {
+    btn.onclick = async function(){
+      const action = this.dataset.action;
+      const limit = this.dataset.limit;
+      this.disabled = true;
+      const orig = this.textContent;
+      this.textContent = '⏳ Running...';
+      appendLog(`⏳ Executing: ${action}${limit?' (limit='+limit+')':''}`, 'info');
+      try {
+        let url = `/run/${action}`;
+        if(limit) url += `?limit=${limit}`;
+        const res = await fetch(API+url, {method:'POST', headers:{'Accept':'application/json'}});
+        const data = await res.json();
+        if(data.ok){
+          appendLog(`✓ ${action} completed successfully`, 'success');
+          if(data.output) appendLog(data.output, 'info');
+        } else {
+          appendLog(`✗ ${action} failed: ${data.error||'Unknown error'}`, 'error');
+          if(data.output) appendLog(data.output, 'error');
+        }
+      } catch(e){
+        appendLog(`✗ ${action} error: ${e.message}`, 'error');
+      }
+      this.disabled = false;
+      this.textContent = orig;
+    };
+  });
+}
+
+function appendLog(msg, type='info'){
+  const logBox = document.getElementById('control-log');
+  const line = document.createElement('div');
+  line.className = 'log-entry '+type;
+  line.textContent = '['+new Date().toLocaleTimeString()+'] '+msg;
+  logBox.appendChild(line);
+  logBox.scrollTop = logBox.scrollHeight;
+  if(logBox.children.length > 200){
+    while(logBox.children.length > 200) logBox.removeChild(logBox.firstChild);
+  }
+}
+
+// ===== ANALYTICS =====
+async function loadAnalytics(){
+  document.getElementById('analytics-content').innerHTML = '<div class="loading"></div>';
+  try {
+    const data = await api('/analytics');
+    const scoreDist = data.score_distribution||[];
+    const topCities = data.top_cities||[];
+    const topCategories = data.top_categories||[];
+    const dailyStats = data.daily_stats||[];
+
+    let html = '<div class="chart-grid">';
+
+    // Score Distribution
+    html += '<div class="chart-card"><div class="chart-title">Score Distribution</div><div class="bar-chart">';
+    const maxScore = Math.max(...scoreDist.map(s=>s.count),1);
+    scoreDist.forEach(s => {
+      const pct = (s.count/maxScore*100).toFixed(1);
+      const cls = String(s.lead_score).toLowerCase();
+      html += `<div class="bar-row"><span class="bar-label" style="text-transform:uppercase;letter-spacing:0.1em;font-size:11px">${esc(s.lead_score)}</span><div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div><span class="bar-value">${s.count}</span></div>`;
+    });
+    if(!scoreDist.length) html += '<div class="empty-state">No data</div>';
+    html += '</div></div>';
+
+    // Top Cities
+    html += '<div class="chart-card"><div class="chart-title">Top Cities</div><div class="bar-chart">';
+    const maxCity = Math.max(...topCities.map(c=>c.count),1);
+    topCities.slice(0,10).forEach(c => {
+      const pct = (c.count/maxCity*100).toFixed(1);
+      html += `<div class="bar-row"><span class="bar-label">${esc(c.city)}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-value">${c.count}</span></div>`;
+    });
+    if(!topCities.length) html += '<div class="empty-state">No data</div>';
+    html += '</div></div>';
+
+    // Top Categories
+    html += '<div class="chart-card"><div class="chart-title">Top Categories</div><div class="bar-chart">';
+    const maxCat = Math.max(...topCategories.map(c=>c.count),1);
+    topCategories.slice(0,10).forEach(c => {
+      const pct = (c.count/maxCat*100).toFixed(1);
+      html += `<div class="bar-row"><span class="bar-label">${esc(c.category)}</span><div class="bar-track"><div class="bar-fill warm" style="width:${pct}%"></div></div><span class="bar-value">${c.count}</span></div>`;
+    });
+    if(!topCategories.length) html += '<div class="empty-state">No data</div>';
+    html += '</div></div>';
+
+    // Daily Stats (full width)
+    html += '<div class="chart-card chart-full"><div class="chart-title">Daily Activity</div>';
+    if(dailyStats.length){
+      html += '<table class="data-table"><thead><tr><th>Date</th><th>Leads Scouted</th><th>Leads Analyzed</th><th>Pitches Generated</th></tr></thead><tbody>';
+      dailyStats.slice(-14).forEach(d => {
+        html += `<tr><td class="td-mono">${esc(d.date)}</td><td>${esc(d.leads_scouted||0)}</td><td>${esc(d.leads_analyzed||0)}</td><td>${esc(d.pitches_generated||0)}</td></tr>`;
+      });
+      html += '</tbody></table>';
+    } else {
+      html += '<div class="empty-state">No daily stats available</div>';
+    }
+    html += '</div>';
+
+    html += '</div>'; // close grid
+    document.getElementById('analytics-content').innerHTML = html;
+  } catch(e){
+    document.getElementById('analytics-content').innerHTML = '<div class="empty-state">Failed to load analytics: '+e.message+'</div>';
+  }
+}
+</script>
+</body>
+</html>
