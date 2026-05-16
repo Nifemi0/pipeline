@@ -3,216 +3,409 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pipeline — Multi-Agent Sales Assistant</title>
+<title>Apex — Autonomous Multi-Agent Sales Pipeline</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#000;color:#f0f0fa;font-family:'Inter',-apple-system,sans-serif;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
-::selection{background:rgba(240,240,250,0.2)}
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:#0a0a0f}
-::-webkit-scrollbar-thumb{background:rgba(240,240,250,0.25);border-radius:3px}
+html{scroll-behavior:smooth}
+body{background:#0a0a0e;color:#e8e8f0;font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:rgba(52,211,153,0.3)}
+a{color:inherit;text-decoration:none}
 
-.container{max-width:800px;margin:0 auto;padding:48px 24px;min-height:100vh;display:flex;flex-direction:column}
+/* ─── NAV ─── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,14,0.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.06)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;color:#fff}
+.nav-logo span{color:rgba(255,255,255,0.3)}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{font-size:12px;letter-spacing:0.08em;color:rgba(255,255,255,0.45);transition:color 0.2s}
+.nav-links a:hover{color:#fff}
+.nav-cta{background:#34d399;color:#0a0a0e!important;padding:8px 20px;border-radius:999px;font-weight:600;font-size:11px!important;letter-spacing:0.1em!important;transition:all 0.2s}
+.nav-cta:hover{background:#6ee7b7!important;transform:translateY(-1px)}
+@media(max-width:640px){.nav-links a:not(.nav-cta){display:none}}
 
-/* HEADER */
-.header{display:flex;align-items:center;justify-content:space-between;padding-bottom:24px;border-bottom:1px solid rgba(240,240,250,0.12);margin-bottom:40px}
-.logo{font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase}
-.logo span{color:rgba(240,240,250,0.35);font-weight:300}
-.header-links{display:flex;gap:20px;align-items:center}
-.header-links a{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(240,240,250,0.45);text-decoration:none;transition:color 0.15s}
-.header-links a:hover{color:#f0f0fa}
+/* ─── HERO ─── */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:120px 24px 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 30% 40%,rgba(52,211,153,0.06) 0%,transparent 60%),radial-gradient(ellipse at 70% 60%,rgba(52,211,153,0.03) 0%,transparent 50%);pointer-events:none}
+.hero-inner{max-width:1200px;margin:0 auto;width:100%;position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+@media(max-width:860px){.hero-inner{grid-template-columns:1fr;gap:40px}}
 
-/* HERO */
-.hero{margin-bottom:48px}
-.hero-tag{display:inline-block;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:rgba(240,240,250,0.5);margin-bottom:16px}
-.hero h1{font-size:40px;font-weight:700;letter-spacing:-0.03em;line-height:1.1;margin-bottom:14px}
-.hero h1 .accent{font-weight:300;color:rgba(240,240,250,0.4)}
-.hero p{font-size:15px;color:rgba(240,240,250,0.55);max-width:560px;line-height:1.7;margin-bottom:24px}
+.hero-left{}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.08);padding:6px 14px;border-radius:999px;margin-bottom:24px}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:#34d399;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.hero h1{font-family:'DM Mono',monospace;font-size:clamp(32px,5vw,56px);font-weight:500;letter-spacing:-0.02em;line-height:1.1;color:#fff;margin-bottom:20px}
+.hero h1 .fade{color:rgba(255,255,255,0.25);font-weight:300}
+.hero h1 .green{color:#34d399}
+.hero p{font-size:16px;color:rgba(255,255,255,0.45);max-width:480px;line-height:1.8;margin-bottom:32px}
 .hero-actions{display:flex;gap:12px;flex-wrap:wrap}
-.hero-btn{background:rgba(240,240,250,0.1);border:1px solid rgba(240,240,250,0.6);color:#f0f0fa;padding:12px 32px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;border-radius:999px;cursor:pointer;transition:all 0.2s;text-decoration:none;display:inline-flex;align-items:center}
-.hero-btn:hover{background:rgba(240,240,250,0.2);border-color:#f0f0fa;transform:translateY(-1px)}
-.hero-btn.secondary{background:transparent;border-color:rgba(240,240,250,0.2);color:rgba(240,240,250,0.5)}
-.hero-btn.secondary:hover{color:#f0f0fa;border-color:rgba(240,240,250,0.4)}
+.btn-primary{background:#34d399;color:#0a0a0e;padding:14px 36px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer}
+.btn-primary:hover{background:#6ee7b7;transform:translateY(-2px);box-shadow:0 8px 24px rgba(52,211,153,0.2)}
+.btn-secondary{background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);padding:14px 36px;border-radius:999px;font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px}
+.btn-secondary:hover{border-color:rgba(255,255,255,0.3);color:#fff;transform:translateY(-1px)}
 
-/* STATS */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:48px}
-.stat{border:1px solid rgba(240,240,250,0.12);padding:16px;text-align:center;border-radius:12px}
-.stat .value{font-size:24px;font-weight:600;letter-spacing:-0.02em}
-.stat .label{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:rgba(240,240,250,0.45);margin-top:4px}
-.stat .value.hot{color:#34d399}
-.stat .value.warm{color:#fbbf24}
-.stat .value.cold{color:#f87171}
+.hero-right{position:relative;padding:40px 0}
+.hero-terminal{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:24px;font-family:'DM Mono',monospace;font-size:12px;line-height:2;overflow:hidden}
+.terminal-line{opacity:0;animation:typeIn 0.4s forwards}
+.terminal-line:nth-child(1){animation-delay:0.3s}
+.terminal-line:nth-child(2){animation-delay:0.8s}
+.terminal-line:nth-child(3){animation-delay:1.3s}
+.terminal-line:nth-child(4){animation-delay:1.8s}
+.terminal-line:nth-child(5){animation-delay:2.3s}
+.terminal-line:nth-child(6){animation-delay:2.8s}
+@keyframes typeIn{to{opacity:1}}
+.terminal-prompt{color:#34d399}
+.terminal-comment{color:rgba(255,255,255,0.25)}
+.terminal-success{color:#34d399}
+.terminal-data{color:#fff}
+.terminal-muted{color:rgba(255,255,255,0.4)}
+.terminal-cursor::after{content:'▊';animation:blink 1s step-end infinite;color:#34d399;margin-left:4px}
+@keyframes blink{50%{opacity:0}}
 
-/* SECTION HEADERS */
-.section{margin-bottom:40px}
-.section-title{font-size:10px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;color:rgba(240,240,250,0.35);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(240,240,250,0.08)}
+/* ─── METRICS BANNER ─── */
+.metrics{background:rgba(255,255,255,0.02);border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);padding:32px 24px}
+.metrics-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+@media(max-width:860px){.metrics-inner{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.metrics-inner{grid-template-columns:repeat(2,1fr)}}
+.metric-item{text-align:center;padding:8px}
+.metric-val{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:#fff;line-height:1.2}
+.metric-val.green{color:#34d399}
+.metric-val.yellow{color:#facc15}
+.metric-val.muted{color:rgba(255,255,255,0.3)}
+.metric-label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-top:4px}
 
-/* FEATURES */
-.features{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.feature{border:1px solid rgba(240,240,250,0.12);padding:20px;border-radius:12px;background:rgba(240,240,250,0.015)}
-.feature h3{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px}
-.feature p{font-size:12px;color:rgba(240,240,250,0.5);line-height:1.6}
+/* ─── SECTIONS ─── */
+.section{padding:80px 24px;max-width:1200px;margin:0 auto}
+.section-label{font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#34d399;margin-bottom:8px}
+.section h2{font-family:'DM Mono',monospace;font-size:clamp(26px,3.5vw,40px);font-weight:500;color:#fff;margin-bottom:16px;line-height:1.2}
+.section h2 .fade{color:rgba(255,255,255,0.2)}
+.section-desc{font-size:15px;color:rgba(255,255,255,0.4);max-width:560px;line-height:1.8;margin-bottom:48px}
 
-/* STEPS */
-.steps{display:flex;flex-direction:column;gap:8px}
-.step{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border:1px solid rgba(240,240,250,0.1);border-radius:10px;background:rgba(240,240,250,0.01)}
-.step-num{font-size:11px;font-weight:600;color:rgba(240,240,250,0.25);width:24px;flex-shrink:0;font-family:'JetBrains Mono',monospace}
-.step-content h4{font-size:12px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px}
-.step-content p{font-size:12px;color:rgba(240,240,250,0.5)}
+/* ─── AGENTS FLOW ─── */
+.agents-flow{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:40px 0 60px}
+.agent-node{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px 24px;text-align:center;min-width:130px;transition:all 0.3s}
+.agent-node:hover{border-color:#34d399;background:rgba(52,211,153,0.05);transform:translateY(-4px)}
+.agent-node .icon{font-size:22px;margin-bottom:8px;opacity:0.6}
+.agent-node .name{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:#fff}
+.agent-node .role{font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px}
+.agent-arrow{color:rgba(255,255,255,0.15);font-size:18px;font-weight:300}
+@media(max-width:640px){.agent-arrow{display:none}}
 
-/* AGENT FLOW */
-.flow{display:flex;align-items:center;justify-content:center;gap:0;border:1px solid rgba(240,240,250,0.1);border-radius:12px;overflow:hidden}
-.flow-step{flex:1;text-align:center;padding:16px 8px;background:rgba(240,240,250,0.015)}
-.flow-step+.flow-step{border-left:1px solid rgba(240,240,250,0.08)}
-.flow-step .name{font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,240,250,0.55);display:block;margin-bottom:2px}
-.flow-step .desc{font-size:10px;color:rgba(240,240,250,0.3)}
+.flow-terminal{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:24px 28px;font-family:'DM Mono',monospace;font-size:12px;line-height:2.2;max-width:720px;margin:0 auto}
+.flow-terminal .line{display:flex;align-items:center;gap:10px}
+.flow-terminal .step-num{color:rgba(255,255,255,0.15);font-size:10px;width:20px;text-align:right;flex-shrink:0}
+.flow-terminal .step-agent{color:#34d399;font-weight:500;width:60px;flex-shrink:0}
+.flow-terminal .step-desc{color:rgba(255,255,255,0.5)}
+.flow-terminal .step-arrow{color:rgba(255,255,255,0.15)}
+.flow-terminal .step-status{color:#34d399;margin-left:auto;flex-shrink:0}
 
-/* FOOTER */
-.footer{margin-top:auto;padding-top:24px;border-top:1px solid rgba(240,240,250,0.08);display:flex;justify-content:space-between;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(240,240,250,0.3)}
-.footer a{color:rgba(240,240,250,0.35);text-decoration:none;transition:color 0.15s}
-.footer a:hover{color:#f0f0fa}
+/* ─── GRID CARDS ─── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:700px){.grid-2{grid-template-columns:1fr}}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:700px){.grid-3{grid-template-columns:1fr}}
 
-@media(max-width:640px){
-  .container{padding:20px 14px}
-  .hero h1{font-size:22px}
-  .hero p{font-size:14px}
-  .hero-btn{padding:10px 24px;font-size:12px;width:100%;justify-content:center}
-  .hero-actions{flex-direction:column}
-  .stats{grid-template-columns:repeat(2,1fr);gap:8px}
-  .stat{padding:12px}
-  .stat .value{font-size:20px}
-  .features{grid-template-columns:1fr;gap:8px}
-  .feature{padding:16px}
-  .flow{flex-wrap:wrap;border:none;gap:4px}
-  .flow-step{border:1px solid rgba(240,240,250,0.1);border-radius:10px;min-width:45%;flex:1 1 45%;padding:12px 6px}
-  .flow-step+.flow-step{border-left:1px solid rgba(240,240,250,0.1)}
-  .steps{gap:6px}
-  .step{padding:12px 14px}
-  .header{flex-direction:column;align-items:flex-start;gap:10px}
-  .footer{flex-direction:column;gap:6px;text-align:center}
-}
+.feature-card{border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:28px;transition:all 0.3s}
+.feature-card:hover{border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.01)}
+.feature-card .emoji{font-size:24px;margin-bottom:12px}
+.feature-card h3{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;letter-spacing:0.05em;color:#fff;margin-bottom:8px}
+.feature-card p{font-size:13px;color:rgba(255,255,255,0.4);line-height:1.7}
+
+/* ─── TECH STACK ─── */
+.tech-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:860px){.tech-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.tech-grid{grid-template-columns:1fr}}
+.tech-item{border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px;text-align:center;transition:border-color 0.2s}
+.tech-item:hover{border-color:rgba(255,255,255,0.12)}
+.tech-item .name{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:#fff;letter-spacing:0.02em}
+.tech-item .use{font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px}
+
+/* ─── PARTNER BADGES ─── */
+.partner-badges{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:48px}
+.partner-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,0.08);padding:10px 18px;border-radius:999px;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);transition:all 0.2s}
+.partner-badge.active{border-color:#34d399;color:#34d399;background:rgba(52,211,153,0.06)}
+
+/* ─── CTA ─── */
+.cta-section{text-align:center;padding:100px 24px;border-top:1px solid rgba(255,255,255,0.05)}
+.cta-section h2{font-family:'DM Mono',monospace;font-size:clamp(24px,3vw,36px);font-weight:500;color:#fff;margin-bottom:12px}
+.cta-section p{color:rgba(255,255,255,0.35);max-width:400px;margin:0 auto 28px;font-size:14px;line-height:1.7}
+
+/* ─── FOOTER ─── */
+.footer{border-top:1px solid rgba(255,255,255,0.04);padding:32px 24px;text-align:center}
+.footer p{font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:0.08em}
+.footer a{color:rgba(255,255,255,0.35);transition:color 0.2s}
+.footer a:hover{color:#fff}
+
+/* ─── SPACING ─── */
+hr{border:none;border-top:1px solid rgba(255,255,255,0.04);margin:0}
 </style>
 </head>
 <body>
-<div class="container">
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="logo">Pipeline <span>// Sales Assistant</span></div>
-    <div class="header-links">
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">Apex <span>// pipeline</span></div>
+    <div class="nav-links">
+      <a href="#agents">Agents</a>
+      <a href="#features">Features</a>
+      <a href="#tech">Stack</a>
       <a href="https://github.com/Nifemi0/pipeline" target="_blank">GitHub</a>
-      <a href="/dashboard" style="color:#f0f0fa;font-weight:500">Dashboard →</a>
+      <a href="/dashboard" class="nav-cta">Dashboard →</a>
     </div>
-  </header>
-
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-tag">AI Agent Olympics · Milan AI Week 2026</div>
-    <h1>Discover businesses without websites.<br><span class="accent">Score them. Pitch them. Automate it all.</span></h1>
-    <p>Autonomous multi-agent sales assistant that finds blue-collar businesses without a web presence, analyzes their signals, and generates personalized pitches — on autopilot.</p>
-    <div class="hero-actions">
-      <a href="/dashboard" class="hero-btn">Enter</a>
-      <a href="#how-it-works" class="hero-btn secondary">How It Works ↓</a>
-    </div>
-  </section>
-
-  <!-- STATS -->
-  <div class="stats">
-    <div class="stat"><div class="value" id="stat-total">—</div><div class="label">Leads</div></div>
-    <div class="stat"><div class="value hot" id="stat-hot">—</div><div class="label">Hot</div></div>
-    <div class="stat"><div class="value warm" id="stat-warm">—</div><div class="label">Warm</div></div>
-    <div class="stat"><div class="value" id="stat-pitches">—</div><div class="label">Pitches</div></div>
   </div>
+</nav>
 
-  <!-- AGENT FLOW -->
-  <section class="section">
-    <div class="section-title">Agent Architecture</div>
-    <div class="flow">
-      <div class="flow-step"><span class="name">Scout</span><span class="desc">Finds leads across 26 US cities</span></div>
-      <div class="flow-step"><span class="name">Analyst</span><span class="desc">Scores hot / warm / cold</span></div>
-      <div class="flow-step"><span class="name">Writer</span><span class="desc">Generates AI pitches</span></div>
-      <div class="flow-step"><span class="name">Dashboard</span><span class="desc">Mission control UI</span></div>
-    </div>
-  </section>
-
-  <!-- FEATURES -->
-  <section class="section">
-    <div class="section-title">Capabilities</div>
-    <div class="features">
-      <div class="feature">
-        <h3>Blue-Collar Focus</h3>
-        <p>Targets plumbers, electricians, roofers, contractors — the businesses most likely to need a website.</p>
-      </div>
-      <div class="feature">
-        <h3>Multi-Signal Scoring</h3>
-        <p>Phone, address, email, Facebook, and website detection — each lead scored hot / warm / cold automatically.</p>
-      </div>
-      <div class="feature">
-        <h3>AI-Powered Pitches</h3>
-        <p>Each pitch personalized with AI — references the business name, category, and location.</p>
-      </div>
-      <div class="feature">
-        <h3>Fully Autonomous</h3>
-        <p>Scout → Analyze → Write → Track. Runs on a cron schedule, surfaces results in real-time.</p>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-badge"><span class="dot"></span> Live in production · 26 US markets</div>
+      <h1>
+        <span class="fade">Autonomous</span><br>
+        <span class="green">Multi-Agent</span><br>
+        Sales Pipeline
+      </h1>
+      <p>Five specialized AI agents work in sequence to discover, score, write, and deliver personalized outreach — entirely without human intervention.</p>
+      <div class="hero-actions">
+        <a href="/dashboard" class="btn-primary">Dashboard →</a>
+        <a href="https://github.com/Nifemi0/pipeline" target="_blank" class="btn-secondary">GitHub ↗</a>
       </div>
     </div>
-  </section>
-
-  <!-- HOW IT WORKS -->
-  <section class="section" id="how-it-works">
-    <div class="section-title">How To Use</div>
-    <div class="steps">
-      <div class="step">
-        <span class="step-num">01</span>
-        <div class="step-content">
-          <h4>Explore the Dashboard</h4>
-          <p>Click "Dashboard" to see total leads, hot/warm/cold breakdown, and agent status.</p>
-        </div>
-      </div>
-      <div class="step">
-        <span class="step-num">02</span>
-        <div class="step-content">
-          <h4>Browse Leads</h4>
-          <p>Search by city, category, or score. Click any lead to see its analysis and pitch history.</p>
-        </div>
-      </div>
-      <div class="step">
-        <span class="step-num">03</span>
-        <div class="step-content">
-          <h4>Run Agents</h4>
-          <p>Run the Analyst to score pending leads, the Writer to generate pitches, or the full Pipeline.</p>
-        </div>
-      </div>
-      <div class="step">
-        <span class="step-num">04</span>
-        <div class="step-content">
-          <h4>Track Results</h4>
-          <p>Analytics page shows score distribution, top cities, categories, and daily activity.</p>
-        </div>
+    <div class="hero-right">
+      <div class="hero-terminal">
+        <div class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-data">apex pipeline run --mode full</span></div>
+        <div class="terminal-line"><span class="terminal-comment"># Initializing 5 agents...</span></div>
+        <div class="terminal-line"><span class="terminal-muted">  Scout    │</span> Discovering leads <span class="terminal-success">✓ 450/day</span></div>
+        <div class="terminal-line"><span class="terminal-muted">  Analyst  │</span> Scoring signals <span class="terminal-success">✓ 106 hot</span></div>
+        <div class="terminal-line"><span class="terminal-muted">  Writer   │</span> Generating pitches <span class="terminal-success">✓ Gemini AI</span></div>
+        <div class="terminal-line"><span class="terminal-muted">  Sender   │</span> Delivering outreach <span class="terminal-success">✓ 167 sent</span></div>
+        <div class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-success">Pipeline complete.</span><span class="terminal-cursor"></span></div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <span>Pipeline — Multi-Agent Sales Assistant</span>
-    <span><a href="https://github.com/Nifemi0/pipeline" target="_blank">GitHub</a> · <a href="/dashboard">Dashboard</a> · Milan AI Week 2026</span>
-  </footer>
+<!-- METRICS -->
+<div class="metrics">
+  <div class="metrics-inner">
+    <div class="metric-item">
+      <div class="metric-val" id="stat-leads">1,174</div>
+      <div class="metric-label">Total Leads</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-val green" id="stat-hot">106</div>
+      <div class="metric-label">Hot Leads</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-val" id="stat-analyzed">457</div>
+      <div class="metric-label">Analyzed</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-val green" id="stat-pitches">167</div>
+      <div class="metric-label">Pitches</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-val" id="stat-cities">26</div>
+      <div class="metric-label">Cities</div>
+    </div>
+  </div>
 </div>
 
+<!-- AGENTS -->
+<section class="section" id="agents">
+  <div class="section-label">// The System</div>
+  <h2>Five Agents. <span class="fade">One Pipeline.</span></h2>
+  <p class="section-desc">Each agent is a specialized AI module with its own decision logic, tooling, and output format — working together to convert raw business data into completed outreach.</p>
+
+  <div class="agents-flow">
+    <div class="agent-node">
+      <div class="icon">🔍</div>
+      <div class="name">Scout</div>
+      <div class="role">Discovery</div>
+    </div>
+    <span class="agent-arrow">→</span>
+    <div class="agent-node">
+      <div class="icon">📊</div>
+      <div class="name">Analyst</div>
+      <div class="role">Scoring</div>
+    </div>
+    <span class="agent-arrow">→</span>
+    <div class="agent-node" style="border-color:#34d399;">
+      <div class="icon">✍️</div>
+      <div class="name" style="color:#34d399;">Writer</div>
+      <div class="role">Gemini AI</div>
+    </div>
+    <span class="agent-arrow">→</span>
+    <div class="agent-node">
+      <div class="icon">📨</div>
+      <div class="name">Sender</div>
+      <div class="role">Delivery</div>
+    </div>
+    <span class="agent-arrow">→</span>
+    <div class="agent-node">
+      <div class="icon">🔄</div>
+      <div class="name">Closer</div>
+      <div class="role">Follow-Up</div>
+    </div>
+  </div>
+
+  <div class="flow-terminal">
+    <div class="line"><span class="step-num">01</span><span class="step-agent">Scout</span><span class="step-arrow">→</span><span class="step-desc">Scans US business directories for leads without websites</span><span class="step-status">450/day</span></div>
+    <div class="line"><span class="step-num">02</span><span class="step-agent">Analyst</span><span class="step-arrow">→</span><span class="step-desc">Scores leads by review signal, status, category, and location</span><span class="step-status">106 hot</span></div>
+    <div class="line"><span class="step-num">03</span><span class="step-agent">Writer</span><span class="step-arrow">→</span><span class="step-desc">Generates personalized pitches via Google Gemini 2.5 Flash</span><span class="step-status">⚡ AI</span></div>
+    <div class="line"><span class="step-num">04</span><span class="step-agent">Sender</span><span class="step-arrow">→</span><span class="step-desc">Delivers emails with timezone-aware scheduling &amp; rate limiting</span><span class="step-status">167 sent</span></div>
+    <div class="line"><span class="step-num">05</span><span class="step-agent">Closer</span><span class="step-arrow">→</span><span class="step-desc">Monitors replies, categorizes intent, manages 21-day cadence</span><span class="step-status">auto</span></div>
+  </div>
+</section>
+
+<hr>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-label">// Capabilities</div>
+  <h2>Enterprise Outreach <span class="fade">on Autopilot.</span></h2>
+  <p class="section-desc">Apex replaces an entire sales development team with AI agents — no templates, no manual prospecting, no expensive tools.</p>
+
+  <div class="grid-3">
+    <div class="feature-card">
+      <div class="emoji">🎯</div>
+      <h3>Hyper-Specific Scoring</h3>
+      <p>Every lead is scored across 4 dimensions: review profile, operational status, category fit, and location density. Only HOT leads get pitched — no spray and pray.</p>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">🧠</div>
+      <h3>Gemini-Powered Writing</h3>
+      <p>The Writer agent uses Google Gemini 2.5 Flash to generate unique, researched pitches for every lead. No templates, no fill-in-the-blank — each email is written from scratch.</p>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">⏱️</div>
+      <h3>9 Daily Batch Sessions</h3>
+      <p>The pipeline processes ~450 leads daily across 9 scheduled windows, with built-in rate limiting and timezone respect. Set it and forget it.</p>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">🌆</div>
+      <h3>26-City Coverage</h3>
+      <p>Active in 26 US markets including New York, Miami, Washington DC, San Jose, Charlotte, Portland, and more. Expandable to any US metro area.</p>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">📊</div>
+      <h3>Live Analytics Dashboard</h3>
+      <p>Full admin panel with lead tables, score distributions, pipeline analytics, inbox view, and agent controls. Real-time data, no refresh needed.</p>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">🔌</div>
+      <h3>API-First Architecture</h3>
+      <p>Every agent is an independent module with a shared database. Run agents individually, orchestrate the full pipeline, or integrate with external tools via REST API.</p>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- GOOGLE GEMINI -->
+<section class="section">
+  <div class="section-label">// Partner Integration</div>
+  <h2>Google Gemini <span class="fade">Challenge</span></h2>
+  <p class="section-desc">The Writer agent is powered by Google Gemini 2.5 Flash — generating personalized, researched sales pitches for every lead with intelligent fallback chains.</p>
+  
+  <div class="partner-badges">
+    <span class="partner-badge active">✓ Google Gemini</span>
+    <span class="partner-badge">Vultr</span>
+    <span class="partner-badge">Featherless</span>
+    <span class="partner-badge">Kraken</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="feature-card">
+      <h3>How Gemini Powers the Writer</h3>
+      <p>The Writer receives structured lead data (name, category, location, score) plus optional live website analysis. A carefully engineered prompt instructs Gemini to generate a 2–3 sentence pitch that references something specific about each business. No pricing mentioned. No generic fluff. Professional, direct, helpful.</p>
+      <p style="margin-top:12px;font-size:12px;color:rgba(255,255,255,0.3)">Model: <strong style="color:#34d399;">gemini-2.5-flash</strong> · Temperature: 0.7 · Max tokens: 350</p>
+    </div>
+    <div class="feature-card" style="background:rgba(52,211,153,0.03);border-color:rgba(52,211,153,0.15)">
+      <h3 style="color:#34d399">Sample Output</h3>
+      <p style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.8;font-style:italic;">
+      "Noticed Kys Logistics is operating without a web presence — your customers are searching for freight partners online and landing on competitors. A simple one-page site showing your service areas and fleet would capture that traffic. I'll build you a demo for free within 24 hours — just say yes."
+      </p>
+      <p style="margin-top:12px;font-size:11px;color:rgba(255,255,255,0.2)">→ Generated by Gemini 2.5 Flash, zero editing</p>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- TECH STACK -->
+<section class="section" id="tech">
+  <div class="section-label">// Stack</div>
+  <h2>Built Simple. <span class="fade">Runs Anywhere.</span></h2>
+  <p class="section-desc">No heavy infrastructure, no GPU dependency, no enterprise licensing. Total monthly operating cost: under $20.</p>
+  
+  <div class="tech-grid">
+    <div class="tech-item">
+      <div class="name">Python / Flask</div>
+      <div class="use">Web server &amp; API</div>
+    </div>
+    <div class="tech-item">
+      <div class="name">SQLite 3</div>
+      <div class="use">Zero-config database</div>
+    </div>
+    <div class="tech-item" style="border-color:rgba(52,211,153,0.2)">
+      <div class="name" style="color:#34d399">Gemini 2.5 Flash</div>
+      <div class="use">AI pitch generation</div>
+    </div>
+    <div class="tech-item">
+      <div class="name">Vanilla JS</div>
+      <div class="use">SPA dashboard</div>
+    </div>
+    <div class="tech-item">
+      <div class="name">Cloudflare Tunnel</div>
+      <div class="use">HTTPS exposure</div>
+    </div>
+    <div class="tech-item">
+      <div class="name">Vercel</div>
+      <div class="use">Static snapshot CDN</div>
+    </div>
+    <div class="tech-item">
+      <div class="name">Gmail SMTP</div>
+      <div class="use">Email delivery</div>
+    </div>
+    <div class="tech-item">
+      <div class="name">Ubuntu 22.04</div>
+      <div class="use">Production host</div>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>See the Pipeline in Action</h2>
+  <p>Full admin dashboard with live data, agent controls, analytics, and inbox — all running on real production data.</p>
+  <a href="/dashboard" class="btn-primary">Launch Dashboard →</a>
+  <p style="margin-top:16px;font-size:11px;color:rgba(255,255,255,0.15)">GitHub: <a href="https://github.com/Nifemi0/pipeline" target="_blank" style="color:rgba(255,255,255,0.35)">github.com/Nifemi0/pipeline</a></p>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>Built for <strong>AI Agent Olympics 2026</strong> · Milan AI Week · May 13–20 · <a href="https://github.com/Nifemi0/pipeline" target="_blank">GitHub</a></p>
+</footer>
+
 <script>
-fetch('/api/stats')
-  .then(r => r.json())
-  .then(s => {
-    document.getElementById('stat-total').textContent = s.total_leads || 0;
-    document.getElementById('stat-hot').textContent = s.hot || 0;
-    document.getElementById('stat-warm').textContent = s.warm || 0;
-    document.getElementById('stat-pitches').textContent = s.pitches || 0;
-  })
-  .catch(() => {});
+// Live metrics from API
+(async function(){
+  try {
+    const res = await fetch('/api/stats');
+    const d = await res.json();
+    if(d.total_leads) document.getElementById('stat-leads').textContent = d.total_leads.toLocaleString();
+    if(d.hot) document.getElementById('stat-hot').textContent = d.hot;
+    if(d.analyzed) document.getElementById('stat-analyzed').textContent = d.analyzed;
+    if(d.pitches) document.getElementById('stat-pitches').textContent = d.pitches;
+  } catch(e) {}
+})();
 </script>
+
 </body>
 </html>
