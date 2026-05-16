@@ -14,16 +14,17 @@ GitHub: https://github.com/Nifemi0/pipeline
 
 1. [Executive Summary](#1-executive-summary)
 2. [Architecture](#2-architecture)
-3. [Technology Stack](#3-technology-stack)
-4. [Sandbox SMS Delivery — Ethical Design Decision](#4-sandbox-sms-delivery--ethical-design-decision)
-5. [Lead Scoring System](#5-lead-scoring-system)
-6. [Database Schema](#6-database-schema)
-7. [Deployment Architecture](#7-deployment-architecture)
-8. [Admin Dashboard](#8-admin-dashboard)
-9. [Key Technical Decisions](#9-key-technical-decisions)
-10. [Future Roadmap](#10-future-roadmap)
-11. [Ethical Safeguards Summary](#11-ethical-safeguards-summary)
-12. [Quick Start](#12-quick-start)
+3. [Partner Integrations](#3-partner-integrations)
+4. [Technology Stack](#4-technology-stack)
+5. [Sandbox SMS Delivery — Ethical Design Decision](#5-sandbox-sms-delivery--ethical-design-decision)
+6. [Lead Scoring System](#6-lead-scoring-system)
+7. [Database Schema](#7-database-schema)
+8. [Deployment Architecture](#8-deployment-architecture)
+9. [Admin Dashboard](#9-admin-dashboard)
+10. [Key Technical Decisions](#10-key-technical-decisions)
+11. [Future Roadmap](#11-future-roadmap)
+12. [Ethical Safeguards Summary](#12-ethical-safeguards-summary)
+13. [Quick Start](#13-quick-start)
 
 ---
 
@@ -76,7 +77,58 @@ Pipeline operates as an orchestrated multi-agent system with five stages:
 
 ---
 
-## 3. Technology Stack
+## 3. Partner Integrations
+
+### 3.1 Google Gemini Challenge
+
+Pipeline integrates **Google Gemini 2.5 Flash** as the primary LLM for the Writer Agent, generating personalized sales pitches for each business lead. We participated in the **Best Use of Gemini** track ($5K prize).
+
+**Integration Points:**
+
+| Agent | Gemini Role | Model | Temperature |
+|-------|------------|-------|-------------|
+| **Writer** | Generates personalized cold outreach emails | `gemini-2.5-flash` | 0.7–0.8 |
+| **Analyst** | (Planned) Business website content analysis | — | — |
+
+**How It Works:**
+
+1. The Writer receives a lead's business name, category, location, and lead score (hot/warm/cold)
+2. It optionally fetches the business website (if available) via HTTP for real-time context
+3. A structured prompt is sent to Gemini 2.5 Flash with all context + website analysis
+4. Gemini returns a 2–3 sentence personalized pitch — no templates, no fill-in-the-blank
+5. If Gemini is unreachable or the API key is missing, the system gracefully falls back to template-based generation
+
+**Prompt Engineering:**
+
+The Writer prompt includes:
+- Business details (name, category, city, state, lead quality)
+- Website analysis (title, tagline, services, headings — extracted via regex from live HTML)
+- Strict rules: max 3 sentences, no pricing mentions, no generic fluff, reference something specific
+- Tone constraints: professional, helpful, confident — not pushy
+
+**Sample Output (Gemini-generated):**
+
+> *"Noticed Kys Logistics is operating without a web presence — your customers are searching for freight partners online and landing on competitors. A simple one-page site showing your service areas and fleet would capture that traffic. I'll build you a demo for free within 24 hours — just say yes."*
+
+**Fallback Chain:**
+```
+Gemini API (primary) → Gemini simplified prompt → Template (guaranteed output)
+```
+
+**Setup:**
+```bash
+# Add your Gemini API key
+echo "GEMINI_API_KEY=AIzaSy..." >> .env
+
+# The Writer agent picks it up automatically
+python3 agents/writer.py --limit 10
+```
+
+The integration is fully open-source in `agents/writer.py` and requires no external services beyond the Gemini API.
+
+---
+
+## 4. Technology Stack
 
 ### Backend
 
@@ -85,7 +137,6 @@ Pipeline operates as an orchestrated multi-agent system with five stages:
 | Web server | **Flask** (Python 3.12) | Serves REST API + admin SPA |
 | Database | **SQLite 3** | Lightweight, file-based, zero configuration |
 | LLM integration | **Google Gemini API** | Scoring reasoning + pitch generation |
-| Search | **DuckDuckGo HTML** (Python requests) | Lead signal extraction |
 | DNS resolution | **Python socket + requests** | Website detection via DNS lookup + HTTP HEAD |
 | Task scheduling | **Hermes Agent cron system** | 9 automated batch sessions/day |
 
@@ -121,7 +172,7 @@ socket           # DNS resolution for website detection (stdlib)
 
 ---
 
-## 4. Sandbox SMS Delivery — Ethical Design Decision
+## 5. Sandbox SMS Delivery — Ethical Design Decision
 
 ### 4.1 The Problem
 
@@ -173,7 +224,7 @@ The entire UI, database schema, and API surface remain identical.
 
 ---
 
-## 5. Lead Scoring System
+## 6. Lead Scoring System
 
 ### 5.1 Yelp-Free Signal Extraction
 
@@ -207,7 +258,7 @@ To be respectful to search engines:
 
 ---
 
-## 6. Database Schema
+## 7. Database Schema
 
 ### 6.1 Tables
 
@@ -250,7 +301,7 @@ pitches_sent, replies_received
 
 ---
 
-## 7. Deployment Architecture
+## 8. Deployment Architecture
 
 ### 7.1 Runtime
 
@@ -310,7 +361,7 @@ Each batch processes 50 leads with 3-second delays between searches.
 
 ---
 
-## 8. Admin Dashboard
+## 9. Admin Dashboard
 
 ### 8.1 Pages
 
@@ -339,7 +390,7 @@ The UI follows a **SpaceX mission control aesthetic**:
 
 ---
 
-## 9. Key Technical Decisions
+## 10. Key Technical Decisions
 
 ### 9.1 Why SQLite Instead of PostgreSQL
 
@@ -375,7 +426,7 @@ Covered in detail in Section 4. In short: **ethics over features.** A hackathon 
 
 ---
 
-## 10. Future Roadmap
+## 11. Future Roadmap
 
 | Feature | Status | Target |
 |---------|--------|--------|
@@ -388,7 +439,7 @@ Covered in detail in Section 4. In short: **ethics over features.** A hackathon 
 
 ---
 
-## 11. Ethical Safeguards Summary
+## 12. Ethical Safeguards Summary
 
 | Safeguard | Implementation |
 |-----------|---------------|
@@ -400,7 +451,7 @@ Covered in detail in Section 4. In short: **ethics over features.** A hackathon 
 
 ---
 
-## 12. Quick Start
+## 13. Quick Start
 
 ```bash
 # Clone the repo
