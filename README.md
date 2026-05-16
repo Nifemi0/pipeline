@@ -126,6 +126,40 @@ python3 agents/writer.py --limit 10
 
 The integration is fully open-source in `agents/writer.py` and requires no external services beyond the Gemini API.
 
+### 3.2 Firecrawl Integration
+
+Pipeline uses **Firecrawl** to replace raw HTTP scraping for the Analyst Agent. Instead of making 13 sequential BeautifulSoup requests (homepage + /contact + /about + /contact-us + ...) that get IP-blocked, the Analyst makes **1 Firecrawl API call** per lead.
+
+**What Firecrawl Handles:**
+
+| Function | Before (Raw HTTP) | After (Firecrawl) |
+|----------|------------------|-------------------|
+| Website scraping | 13 sequential requests, often blocked | 1 API call, proxy rotates automatically |
+| Email extraction | Manual regex on raw HTML | Clean markdown + raw HTML with regex |
+| Social link detection | BeautifulSoup link traversal | Pre-extracted links array from Firecrawl |
+| JS-rendered pages | Missed entirely (no JS execution) | Handles React/Vue/SPA sites |
+| Rate limiting | Self-imposed delays (1-3s) | Built-in, no manual delays |
+
+**Architecture:**
+The Firecrawl logic lives in `agents/firecrawl_scraper.py` and exposes two main functions:
+- `scrape_website(url)` — Single page scrape returning markdown, links, emails, social
+- `analyze_lead_website(lead)` — Full lead analysis returning structured signals
+
+**Sample run (1 lead, 1 call):**
+```
+→ Whitmore Construction (https://whitmoreconstruction.net)
+  ✓ Title: "Home - Whitmore Construction"
+  ✓ 2 emails found: info@whitmoreconstruction.net, info@withmoreconstruction.net
+  ✓ 1 Firecrawl API call — 0.8s total
+```
+
+**Fallback Chain:**
+```
+Firecrawl API (primary) → Static data (lead has phone/address → warm) → cold
+```
+
+The `agents/analyst.py` imports Firecrawl at module level and falls back gracefully if the API key is missing or credits are exhausted.
+
 ---
 
 ## 4. Technology Stack
@@ -137,6 +171,7 @@ The integration is fully open-source in `agents/writer.py` and requires no exter
 | Web server | **Flask** (Python 3.12) | Serves REST API + admin SPA |
 | Database | **SQLite 3** | Lightweight, file-based, zero configuration |
 | LLM integration | **Google Gemini API** | Scoring reasoning + pitch generation |
+| Web scraping | **Firecrawl API** | Lead website analysis (1 call vs 13 requests) |
 | DNS resolution | **Python socket + requests** | Website detection via DNS lookup + HTTP HEAD |
 | Task scheduling | **Hermes Agent cron system** | 9 automated batch sessions/day |
 
@@ -289,15 +324,15 @@ pitches_sent, replies_received
 
 ### 6.2 Current State
 
-| Metric | Count |
-|--------|-------|
+| Lead Quality | Count |
+|--------------|-------|
 | Total leads discovered | 1,174 |
-| Leads analyzed | 447 |
+| Leads analyzed | 457 |
 | Hot leads (high priority) | 106 |
-| Warm leads (medium priority) | 264 |
-| Cold leads (skipped) | 77 |
-| Pitches generated | 153 |
-| Pitches sent (sandbox) | 5+ |
+| Warm leads (medium priority) | 269 |
+| Cold leads (skipped) | 82 |
+| Pitches generated | 167 |
+| Pitches sent (sandbox) | 10 |
 
 ---
 
