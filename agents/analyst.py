@@ -28,6 +28,9 @@ except ImportError:
 
 from data.schema import get_db, init_db, update_stat
 
+# Firecrawl scraper (replaces raw requests + BeautifulSoup)
+from agents.firecrawl_scraper import analyze_lead_website
+
 # ─── ENV LOADER ──────────────────────────────────────────────────────────────
 def load_dotenv():
     if os.environ.get("GEMINI_API_KEY"):
@@ -270,44 +273,18 @@ def has_website_signal(lead):
 
 def collect_signals(lead):
     """
-    Collect all available signals for a lead using IP-independent methods.
-    No search engine calls — only direct website scraping and existing data.
+    Collect all available signals for a lead using Firecrawl.
+    Single API call per lead — no more 13 sequential HTTP requests.
+    No search engine calls — only direct website scraping via Firecrawl.
     """
     business_name = lead.get("business_name", "")
     city = lead.get("city", "")
     state = lead.get("state", "")
     website_url = lead.get("website", "")
-    
-    signals = {
-        "has_website": has_website_signal(lead),
-        "has_phone": bool(lead.get("phone")),
-        "has_address": bool(lead.get("address")),
-        "has_email": False,
-        "email": "",
-        "facebook_found": False,
-        "facebook_url": "",
-        "gbp_found": False,
-        "has_any_online_signal": False,
-    }
-    
-    # ─── Signal 1: Website scraping for email + social ───
-    if website_url:
-        site_data = scrape_website_for_signals(website_url, business_name)
-        
-        if site_data["has_real_website"]:
-            signals["has_website"] = True
-            signals["has_any_online_signal"] = True
-        
-        if site_data["emails"]:
-            signals["has_email"] = True
-            # Pick the most business-like email (not gmail if alternatives exist)
-            biz_emails = [e for e in site_data["emails"] if "gmail.com" not in e]
-            signals["email"] = (biz_emails or site_data["emails"])[0]
-        
-        if site_data["facebook_url"]:
-            signals["facebook_found"] = True
-            signals["facebook_url"] = site_data["facebook_url"]
-    
+
+    # Use Firecrawl-powered analysis (1 call instead of 13+)
+    signals, pages_scraped = analyze_lead_website(lead)
+
     # ─── Signal 2: Try direct Facebook search (fallback) ───
     if not signals["facebook_found"] and business_name and city:
         fb = try_facebook_direct_search(business_name, city, state)
@@ -315,19 +292,23 @@ def collect_signals(lead):
         signals["facebook_url"] = fb["url"]
         if fb["found"]:
             signals["has_any_online_signal"] = True
-    
-    # ─── Signal 3: Any website at all is a positive signal ───
-    if signals["has_website"]:
-        signals["has_any_online_signal"] = True
-    
-    return signals, site_data.get("pages_scraped", 0) if website_url else 0
+
+    return signals, pages_scraped
 
 
 # ─── AI SCORING ──────────────────────────────────────────────────────────────
 
 def score_lead_with_gemini(business_name, category, city, signals):
-    """Score lead using Gemini with multi-signal data."""
+    """Score lead using Gemini with multi-signal data (google-genai SDK)."""
     if not GEMINI_API_KEY:
+        return rule_based_score(signals)
+
+    try:
+        from google import genai
+        client = genai.Client(api_key=GEMINI_API_KEY)
+    except ImportError:
+        return rule_based_score(signals)
+    except Exception:
         return rule_based_score(signals)
 
     prompt = f"""Analyze this US blue-collar business lead for a website-building sales pitch.
@@ -354,21 +335,21 @@ Respond with ONLY valid JSON:
 {{"score": "hot/warm/cold", "reason": "one-sentence explanation", "confidence": 0.0-1.0}}"""
 
     try:
-        resp = requests.post(
-            f"{GEMINI_URL}?key={GEMINI_API_KEY}",
-            json={"contents": [{"parts": [{"text": prompt}]}]},
-            timeout=15
+        from google import genai
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        resp = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config={"temperature": 0.3, "max_output_tokens": 200},
         )
-        if resp.status_code == 200:
-            data = resp.json()
-            text = data["candidates"][0]["content"]["parts"][0]["text"]
-            json_match = re.search(r'\{.*\}', text, re.DOTALL)
-            if json_match:
-                return json.loads(json_match.group())
-    except:
-        pass
-
-    return rule_based_score(signals)
+        text = resp.text.strip()
+        json_match = re.search(r'\{.*\}', text, re.DOTALL)
+        if json_match:
+            return json.loads(json_match.group())
+    except ImportError:
+        return rule_based_score(signals)
+    except Exception:
+        return rule_based_score(signals)
 
 
 def rule_based_score(signals):
